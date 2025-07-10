@@ -1,14 +1,18 @@
-# Use imagem oficial OpenJDK 21
-FROM eclipse-temurin:21-jdk-jammy
-
-# Cria diretório para a aplicação
+# Estágio 1: Build - Usa uma imagem com Maven e JDK para COMPILAR o projeto
+# O nome "build" é um apelido para este estágio, que usaremos depois.
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+# Este comando RODA O MAVEN dentro do Docker para criar o arquivo .jar
+RUN mvn clean package -DskipTests
 
-# Copia o jar gerado para dentro do container
-COPY target/zenith-0.0.1-SNAPSHOT.jar app.jar
-
-# Expõe a porta 8080
+# Estágio 2: Run - Usa uma imagem Java leve para RODAR a aplicação
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+# Copia apenas o .jar gerado no Estágio 1 para a imagem final
+COPY --from=build /app/target/*.jar app.jar
+# Expõe a porta que a aplicação usa
 EXPOSE 8080
-
-# Comando para rodar a aplicação
+# Comando para iniciar a aplicação quando o contêiner rodar
 ENTRYPOINT ["java", "-jar", "app.jar"]
