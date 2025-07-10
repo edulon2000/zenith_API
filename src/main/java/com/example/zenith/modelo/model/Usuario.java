@@ -1,4 +1,4 @@
-package com.example.zenith.model;
+package com.example.zenith.modelo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
